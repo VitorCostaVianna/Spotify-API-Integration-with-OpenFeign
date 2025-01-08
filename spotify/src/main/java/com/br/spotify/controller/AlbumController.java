@@ -3,8 +3,13 @@ package com.br.spotify.controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.br.spotify.cliente.Album;
+import com.br.spotify.cliente.AlbumResponse;
+import com.br.spotify.cliente.AlbumSpotifyCliente;
 import com.br.spotify.cliente.AuthSpotifyClient;
 import com.br.spotify.cliente.LoginRequest;
+
+import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,20 +21,28 @@ public class AlbumController {
     
     private final AuthSpotifyClient authSpotifyClient;
 
-    public AlbumController(AuthSpotifyClient authSpotifyClient) {
+    private final AlbumSpotifyCliente albumSpotifyCliente;
+
+    public AlbumController(AuthSpotifyClient authSpotifyClient,
+                           AlbumSpotifyCliente albumSpotifyCliente) {
         this.authSpotifyClient = authSpotifyClient;
+        this.albumSpotifyCliente = albumSpotifyCliente;
     }
 
     @GetMapping("/albums")
-    public ResponseEntity<String> helloWorld(){
+    public ResponseEntity<List<Album>> helloWorld(){
         
         var request = new LoginRequest(
             "client_credentials",
-            "10bf31ded0d74a6c8e69e7f8a748290e",
-            "0eed604d7a5e4748a8cfee6756c7f49c"
+            "your_client_id",
+            "your_client_secret"
         );
+
+        var token = authSpotifyClient.login(request).getAccessToken();
+
+        var response = albumSpotifyCliente.getNewReleases("Bearer " + token);
         
-        return ResponseEntity.ok(authSpotifyClient.login(request).getAccessToken());     
+        return ResponseEntity.ok(response.getAlbums().getItems());     
     }
     
 }
